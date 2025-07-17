@@ -1,4 +1,5 @@
-from app import app
+from app import create_app, db
+app = create_app()
 from server.models import db, Animal
 
 class TestAnimal:

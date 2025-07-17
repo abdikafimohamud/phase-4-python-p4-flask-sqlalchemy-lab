@@ -1,50 +1,27 @@
-#!/usr/bin/env python3
+from app import create_app
+from models import db, Animal, Zookeeper, Enclosure
 
-from random import choice as rc
-
-from faker import Faker
-
-from app import app
-from models import db, Zookeeper, Animal, Enclosure
-
-fake = Faker()
+app = create_app()
 
 with app.app_context():
-
+    print("Clearing db...")
     Animal.query.delete()
     Zookeeper.query.delete()
     Enclosure.query.delete()
 
-    zookeepers = []
-    for n in range(25):
-        zk = Zookeeper(name=fake.name(), birthday=fake.date_between(
-            start_date='-70y', end_date='-18y'))
-        zookeepers.append(zk)
+    print("Seeding db...")
 
-    db.session.add_all(zookeepers)
+    zk1 = Zookeeper(name="Dylan Taylor", birthday="1985-06-10")
+    zk2 = Zookeeper(name="Stephanie Contreras", birthday="1996-09-20")
 
-    enclosures = []
-    environments = ['Desert', 'Pond', 'Ocean', 'Field', 'Trees', 'Cave', 'Cage']
+    enc1 = Enclosure(environment="trees", open_to_visitors=True)
+    enc2 = Enclosure(environment="pond", open_to_visitors=False)
 
-    for n in range(25):
-        e = Enclosure(environment=rc(environments), open_to_visitors=rc([True, False]))
-        enclosures.append(e)
+    a1 = Animal(name="Logan", species="Snake", zookeeper=zk1, enclosure=enc1)
+    a2 = Animal(name="Leo", species="Lion", zookeeper=zk2, enclosure=enc2)
+    a3 = Animal(name="Milo", species="Monkey", zookeeper=zk2, enclosure=enc1)
 
-    db.session.add_all(enclosures)
-
-    animals = []
-    species = ['Lion', 'Tiger', 'Bear', 'Hippo', 'Rhino', 'Elephant', 'Ostrich',
-        'Snake', 'Monkey']
-
-    for n in range(200):
-        name = fake.first_name()
-        while name in [a.name for a in animals]:
-            name=fake.first_name()
-        a = Animal(name=name, species=rc(species))
-        a.zookeeper = rc(zookeepers)
-        a.enclosure = rc(enclosures)
-        animals.append(a)
-
-    db.session.add_all(animals)
+    db.session.add_all([zk1, zk2, enc1, enc2, a1, a2, a3])
     db.session.commit()
 
+    print("Done seeding.")
